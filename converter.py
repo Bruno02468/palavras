@@ -1,52 +1,63 @@
 #!/usr/bin/env python3
+
 import unicodedata
+from urllib.request import urlopen
+from datetime import date
 
-
-ENTRADA = 'pt_BR.dic'
-SAIDA = 'palavras.txt'
-
+LANG_NAME = "pt_BR"
+URL_BASE = "https://cgit.freedesktop.org/libreoffice/dictionaries/plain/"
+DIC_URL = f"{URL_BASE}/{LANG_NAME}/{LANG_NAME}.dic"
+SAIDA = f"palavras_{LANG_NAME}_{date.today().isoformat()}.txt"
 
 def normalizar(txt):
-    """Remove acentos e transforma 'A' ou 'ª' em 'a'."""
-    norm_txt = unicodedata.normalize('NFKD', txt).lower()
-    shaved = ''.join(c for c in norm_txt
-                     if not unicodedata.combining(c))
-    return unicodedata.normalize('NFC', shaved)
+  """Remove acentos e transforma 'A' ou 'ª' em 'a'."""
+  norm_txt = unicodedata.normalize('NFKD', txt).lower()
+  shaved = ''.join(c for c in norm_txt
+           if not unicodedata.combining(c))
+  return unicodedata.normalize('NFC', shaved)
 
 
 def chave(txt):
-    """Manter palavras acentuadas após as não acentuadas"""
-    codigos = tuple(ord(c) for c in txt)
-    return (normalizar(txt), codigos)
+  """Manter palavras acentuadas após as não acentuadas"""
+  codigos = tuple(ord(c) for c in txt)
+  return (normalizar(txt), codigos)
+
+def main():
+  print(f"Usando dicionário online: {DIC_URL}")
+  palavras = set()
+  i = -1
+  for linha in urlopen(DIC_URL):
+    linha = linha.decode("utf-8")
+    i += 1
+    if i == 0:
+      continue  # ignorar primeira linha (contagem)
+    linha = linha.strip()
+    linha = linha.split('/')[0]
+    partes = linha.split('-')
+    sufixo = partes[-1]
+    if len(sufixo) == 2 and sufixo.upper() == sufixo:
+      continue  # ignorrar nomes de cidades
+    if linha:  # para evitar palavra vazia
+      palavras.add(linha)  # incluir palavra composta
+    if len(partes) > 1:
+      for palavra in partes:
+        if palavra:
+          palavras.add(palavra)  # para evitar palavra vazia
+
+  qt_original = i
 
 
-palavras = set()
-with open(ENTRADA, encoding='latin-1') as entrada:
-    for i, linha in enumerate(entrada):
-        if i == 0:
-            continue  # ignorar primeira linha (contagem)
-        linha = linha.strip()
-        linha = linha.split('/')[0]
-        partes = linha.split('-')
-        sufixo = partes[-1]
-        if len(sufixo) == 2 and sufixo.upper() == sufixo:
-            continue  # ignorrar nomes de cidades
-        if linha:  # para evitar palavra vazia
-            palavras.add(linha)  # incluir palavra composta
-        if len(partes) > 1:
-            for palavra in partes:
-                if palavra:
-                    palavras.add(palavra)  # para evitar palavra vazia
+  msg = '{} palavras na lista original, {} na lista gerada: {} adicionadas'
+  extra = len(palavras) - qt_original
+  print(msg.format(qt_original, len(palavras), extra))
 
-    qt_original = i
+  palavras = sorted(palavras, key=chave)
 
-msg = '{} palavras na lista original, {} na lista gerada: {} adicionadas'
-extra = len(palavras) - qt_original
-print(msg.format(qt_original, len(palavras), extra))
-
-palavras = sorted(palavras, key=chave)
-
-with open(SAIDA, 'wt', encoding='utf-8') as saida:
+  with open(SAIDA, 'wt', encoding='utf-8') as saida:
     saida.write('\n'.join(palavras))
     saida.write('\n')
+  
+  print(f"Salvo em {SAIDA}.")
 
+if __name__ == "__main__":
+  main()

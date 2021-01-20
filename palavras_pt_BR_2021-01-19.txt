@@ -67955,7 +67955,6 @@ chás-do-méxico
 chás-do-rio
 chás-dos-apalaches
 chás-dos-jesuítas
-chãs-danca
 chás-ingleses
 chás-mate
 chás-mineiros
@@ -102219,7 +102218,6 @@ dz.
 dzeta
 dzô
 dzonga
-danca
 e
 é
 e-cig

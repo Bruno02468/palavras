@@ -1,3 +1,11 @@
+_Nota: eu (Bruno) achei esse projeto intocado há cinco anos._
+
+_Eu atualizei o programa para usar o dicionário baixado online, só isso._
+
+_O original pode ser encontrado [aqui](github.com/pythonprobr/palavras)._
+
+_Segue o README.md original._
+
 # Palavras PT-BR
 
 O arquivo `palavras.txt` neste repositório contém mais de 320.000 palavras do idioma português brasileiro.
